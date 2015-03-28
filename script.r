@@ -146,16 +146,21 @@ tall_pitchers<-tall_pitchers[,c("Name","yearID","Age","height","teamID","G","GS"
 
 short_relief_pitchers<-short_pitchers[short_pitchers$IP.x<90,]
 short_relief_pitchers<-short_relief_pitchers[as.numeric(as.character(short_relief_pitchers$GS)) <=5,]
+short_relief_pitchers<-short_relief_pitchers[short_relief_pitchers$IP.x>10,]
 tall_relief_pitchers<-tall_pitchers[tall_pitchers$IP.x<90,]
 tall_relief_pitchers<-tall_relief_pitchers[as.numeric(as.character(tall_relief_pitchers$GS)) <=5,]
+tall_relief_pitchers<-tall_relief_pitchers[tall_relief_pitchers$IP.x>10,]
+
 
 short_starting_pitchers<-short_pitchers[short_pitchers$IP.x>=150,]
 tall_starting_pitchers<-tall_pitchers[tall_pitchers$IP.x>=150,]
 
 hist_data<-data.frame(pitchers$height[pitchers$IPouts*3 >=150])
 hist_data<-hist_data[-1271,] #corrupted data
+
 png("pics/height_historgram.png", width=6, height=4, units="in", res=200)
-hist(hist_data,xlab="Height (in)",main="Height Distribution of Pitchers from 2010-2014")
+myhist<-hist(hist_data,xlab="Height (in)",main="Height Distribution of Pitchers from 2010-2014",prob=FALSE)
+curve(2500*dnorm(x, mean=mean(hist_data), sd=sd(hist_data)),add=TRUE,col="darkblue")
 dev.off()
 
 png("pics/value_reliever_plot.png", width=6, height=4, units="in", res=200)
@@ -173,11 +178,49 @@ grid()
 options(opt)
 dev.off()
 
+png("pics/value_starter_plot.png", width=6, height=4, units="in", res=200)
+getOption("scipen")
+opt <- options("scipen" = 20)
+getOption("scipen")
+plot(tall_starting_pitchers[tall_starting_pitchers$Acquired=="Free Agency",]$salary,
+     as.numeric(as.character(tall_starting_pitchers[tall_starting_pitchers$Acquired=="Free Agency",]$WAR)),
+     xlab="Salary in Free Agency",ylab="WAR",,main="Starter WAR Against Salary", pch=19)
+points(short_starting_pitchers[short_starting_pitchers$Acquired=="Free Agency",]$salary,
+       as.numeric(as.character(short_starting_pitchers[short_starting_pitchers$Acquired=="Free Agency",]$WAR)),
+       col=2,pch=3)
+legend(12350000,-.2,c("short","tall"),col=c(2,1),pch=c(3,19))
+grid()
+options(opt)
+dev.off()
+
 
 #this is the WAR value of a tall pitcher per $10million that he is being paid in free agency
-value_reliever_tall<-mean(as.numeric(as.character(tall_relief_pitchers[tall_relief_pitchers$Acquired=="Free Agency",]$WAR)))/
+tall_relief_ratio<-value_reliever_tall<-mean(as.numeric(as.character(tall_relief_pitchers[tall_relief_pitchers$Acquired=="Free Agency",]$WAR)))/
   mean(tall_relief_pitchers[tall_relief_pitchers$Acquired=="Free Agency",]$salary) * 10000000
 
 #this is the WAR value of a short pitcher per $10million that he is being paid in free agency
-value_reliever_short<-mean(as.numeric(as.character(short_relief_pitchers[short_relief_pitchers$Acquired=="Free Agency",]$WAR)))/
+short_relief_ratio<-value_reliever_short<-mean(as.numeric(as.character(short_relief_pitchers[short_relief_pitchers$Acquired=="Free Agency",]$WAR)))/
   mean(short_relief_pitchers[short_relief_pitchers$Acquired=="Free Agency",]$salary) * 10000000
+
+relief_ratio<-short_relief_ratio/tall_relief_ratio
+
+tall_relief_error_terms<-as.numeric(as.character(tall_relief_pitchers[tall_relief_pitchers$Acquired=="Free Agency",]$WAR))-
+  (tall_relief_ratio/10000000)*(tall_relief_pitchers[tall_relief_pitchers$Acquired=="Free Agency",]$salary)
+
+tall_relief_error_var<-sum(tall_relief_error_terms^2)/dim(tall_relief_pitchers)[1]
+
+tall_relief_var_estimator<-(1/mean(tall_relief_pitchers[tall_relief_pitchers$Acquired=="Free Agency",]$salary)^2)*
+  (1/dim(tall_relief_pitchers)[1])*tall_relief_error_var
+
+short_relief_error_terms<-as.numeric(as.character(short_relief_pitchers[short_relief_pitchers$Acquired=="Free Agency",]$WAR))-
+  (short_relief_ratio/10000000)*(short_relief_pitchers[short_relief_pitchers$Acquired=="Free Agency",]$salary)
+
+short_relief_error_var<-sum(short_relief_error_terms^2)/dim(short_relief_pitchers)[1]
+
+short_relief_var_estimator<-(1/mean(short_relief_pitchers[short_relief_pitchers$Acquired=="Free Agency",]$salary)^2)*
+  (1/dim(short_relief_pitchers)[1])*short_relief_error_var
+
+critical_t_relief<-((short_relief_ratio/10000000)-(tall_relief_ratio/10000000))/sqrt(tall_relief_var_estimator+short_relief_var_estimator)
+t_value_relief<-qt(.95,968+95-2)
+p_value_relief<-1-pt(2.909414,968+95-2)
+
