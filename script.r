@@ -152,23 +152,23 @@ tall_relief_pitchers<-tall_relief_pitchers[as.numeric(as.character(tall_relief_p
 short_starting_pitchers<-short_pitchers[short_pitchers$IP.x>=150,]
 tall_starting_pitchers<-tall_pitchers[tall_pitchers$IP.x>=150,]
 
+png("pics/height_historgram.png", width=6, height=4, units="in", res=200)
+hist(pitchers$height[pitchers$IPouts*3 >=150],xlab="Height (in)",main="Height Distribution of Pitchers from 2010-2014")
+dev.off()
+
 png("pics/value_reliever_plot.png", width=6, height=4, units="in", res=200)
 getOption("scipen")
 opt <- options("scipen" = 20)
 getOption("scipen")
 plot(tall_relief_pitchers[tall_relief_pitchers$Acquired=="Free Agency",]$salary,
      as.numeric(as.character(tall_relief_pitchers[tall_relief_pitchers$Acquired=="Free Agency",]$WAR)),
-     xlab="Salary in Free Agency",ylab="WAR",pch=19)
+     xlab="Salary in Free Agency",ylab="WAR",,main="Reliever WAR Against Salary", pch=19)
 points(short_relief_pitchers[short_relief_pitchers$Acquired=="Free Agency",]$salary,
        as.numeric(as.character(short_relief_pitchers[short_relief_pitchers$Acquired=="Free Agency",]$WAR)),
        col=2,pch=3)
 legend(12350000,-.2,c("short","tall"),col=c(2,1),pch=c(3,19))
 grid()
-
-
 options(opt)
-
-
 dev.off()
 
 
