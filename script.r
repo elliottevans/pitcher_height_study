@@ -152,8 +152,10 @@ tall_relief_pitchers<-tall_relief_pitchers[as.numeric(as.character(tall_relief_p
 short_starting_pitchers<-short_pitchers[short_pitchers$IP.x>=150,]
 tall_starting_pitchers<-tall_pitchers[tall_pitchers$IP.x>=150,]
 
+hist_data<-data.frame(pitchers$height[pitchers$IPouts*3 >=150])
+hist_data<-hist_data[-1271,] #corrupted data
 png("pics/height_historgram.png", width=6, height=4, units="in", res=200)
-hist(pitchers$height[pitchers$IPouts*3 >=150],xlab="Height (in)",main="Height Distribution of Pitchers from 2010-2014")
+hist(hist_data,xlab="Height (in)",main="Height Distribution of Pitchers from 2010-2014")
 dev.off()
 
 png("pics/value_reliever_plot.png", width=6, height=4, units="in", res=200)
