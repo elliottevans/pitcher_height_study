@@ -8,6 +8,8 @@ pitching_2012_war<-read.csv("pitching_2012_war.csv",header=TRUE)
 pitching_2011_war<-read.csv("pitching_2011_war.csv",header=TRUE)
 pitching_2010_war<-read.csv("pitching_2010_war.csv",header=TRUE)
 
+options(scipen=999)
+
 fip_constant_2010<-3.079
 fip_constant_2011<-3.025
 fip_constant_2012<-3.095
@@ -224,3 +226,36 @@ critical_t_relief<-((short_relief_ratio/10000000)-(tall_relief_ratio/10000000))/
 t_value_relief<-qt(.95,968+95-2)
 p_value_relief<-1-pt(2.909414,968+95-2)
 
+successful_short_pitchers<-short_pitchers[order(short_pitchers$WAR,decreasing=TRUE),c("Name","yearID","teamID","height","IP.x","FIP","WAR")]
+successful_short_pitchers<-successful_short_pitchers[-6,]
+successful_short_pitchers<-successful_short_pitchers[-6,]
+successful_short_pitchers$IP.x<-round(successful_short_pitchers$IP.x,digits=3)
+successful_short_pitchers$FIP<-round(successful_short_pitchers$FIP,digits=3)
+
+names(successful_short_pitchers)<-c("Name","Year","Team","Height","IP","FIP","WAR")
+successful_short_pitchers<-successful_short_pitchers[1:10,]
+png("pics/successful_short_pitch.png", width=6, height=4, units="in", res=200)
+ grid.table(successful_short_pitchers,rows=NULL)
+
+dev.off()
+
+new_table<-data.frame(c(0.51,0.87,"0.0005*"),c(2.55,2.38,0.86))
+colnames(new_table)<-c("Relief","Starting")
+rownames(new_table)<-c("Tall","Short","P-Value")
+
+png("pics/war_dist.png", width=3, height=2, units="in", res=200)
+grid.table(new_table)
+
+dev.off()
+
+#short_relief_war<-as.numeric(as.character(short_relief_pitchers$WAR))
+#tall_relief_war<-as.numeric(as.character(tall_relief_pitchers$WAR))
+#pooled_relief_var<-(sum((short_relief_war-mean(short_relief_war))^2) +
+#                      sum((tall_relief_war-mean(tall_relief_war))^2))/(length(short_relief_war)+length(tall_relief_war)-2)
+#t_critical_2<-(mean(short_relief_war)-mean(tall_relief_war))/(pooled_relief_var*sqrt(1/length(tall_relief_war)+1/length(short_relief_war)))
+
+short_starting_war<-as.numeric(as.character(short_starting_pitchers$WAR))
+tall_starting_war<-as.numeric(as.character(tall_starting_pitchers$WAR))
+pooled_starting_var<-(sum((short_starting_war-mean(short_starting_war))^2) +
+                      sum((tall_starting_war-mean(tall_starting_war))^2))/(length(short_starting_war)+length(tall_starting_war)-2)
+t_critical_3<-(mean(short_starting_war)-mean(tall_starting_war))/(pooled_starting_var*sqrt(1/length(tall_starting_war)+1/length(short_starting_war)))
